@@ -1,7 +1,8 @@
 % Semiconductors
 fname = 'C:\von_Server\ETH\BSc Physics\5\Praktikum 3\Semiconductor\plots';
-
+%{
 % 1. PART
+%{
 opts = spreadsheetImportOptions("NumVariables", 7);
 opts.Sheet = "Tabelle1";
 opts.DataRange = "A2:G23";
@@ -18,13 +19,13 @@ V2mV = tbl.V2mV;
 err_V2mV = tbl.err_V2mV;
 err_I = tbl.err_I;
 clear opts tbl
-    T = str2double(TC); % °C
+    T = str2double(TC); % ï¿½C
     I = str2double(ImuA)*10^-6; % A
     V4 = str2double(V4mV)*10^-3; % V
     err_V4 = str2double(err_V4mV)*10^-3; % V
     V2 = str2double(V2mV)*10^-3; % V
     err_V2 = str2double(err_V2mV)*10^-3; % V
-    err_T = 0.1*ones(22,1);% °C
+    err_T = 0.1*ones(22,1);% ï¿½C
     err_I = str2double(err_I)*10^-6; % A
     
     R_s = V4(:) ./ (I(:)); % range: (2:11)
@@ -33,7 +34,8 @@ clear opts tbl
         err_R_s(i) = sqrt((err_V4(i) / I(i))^2+(V4(i) * err_I(i) / I(i)^2)^2);
     end       
    
-    
+% CURRENT-LIMIT-PLOT    
+%{
  figure
  yyaxis left
  errorbar(I(:), R_s(:), err_R_s(:)/2, err_R_s(:)/2, err_I(:)/2, err_I(:)/2, 'b*')
@@ -53,9 +55,9 @@ clear opts tbl
  xlabel('I [A]');
  ylabel('T [^\circ C]');
  saveas(gcf, fullfile(fname, 'Rs_vs_I.eps'), 'epsc');
+ %}
  
- 
-
+%}
 % 2. PART: HEAT UP
 
 opts = spreadsheetImportOptions("NumVariables", 6);
@@ -74,7 +76,7 @@ tbl = readtable("C:\von_Server\ETH\BSc Physics\5\Praktikum 3\Semiconductor\data\
     errI_mAoven_up = tbl.errI_mA_up;
     clear opts tbl
     
-    err_T_oven_up = str2double(errToven_up); % °C or K
+    err_T_oven_up = str2double(errToven_up); % ï¿½C or K
     V4_oven_up = str2double(V4oven_up) * 10^-3; % V
     err_V4_oven_up = str2double(errV4oven_up)* 10^-3; % V
     I_oven_up = str2double(I_mAoven_up)* 10^-3; % A
@@ -106,6 +108,9 @@ tbl = readtable("C:\von_Server\ETH\BSc Physics\5\Praktikum 3\Semiconductor\data\
         [xXData, yYData] = prepareCurveData( X_up(16:116), lnR_up(16:116) ); % ohne rechteste 15 data points. wegen 1/T sind dies die ersten 15
         fFt = fittype( 'poly1' );
         [fFitresult, gGof] = fit( xXData, yYData, fFt );
+            % fFitresult: p1 =       1.036  (1.031, 1.04)
+            %               -> err_E_gap_heating := 0.005
+            %             p2 =       -8.04  (-8.085, -7.995)
         cCoeff = coeffvalues(fFitresult);
         fFitt1 = fit(xXData, yYData, fFt);
         
@@ -132,11 +137,33 @@ tbl = readtable("C:\von_Server\ETH\BSc Physics\5\Praktikum 3\Semiconductor\data\
     title('T-dependent resistance while heating up');
     saveas(gcf, fullfile(fname, 'oven_lnR_up.eps'), 'epsc');
     
+  %{
+            % Figure to fit linearly for residuals
+            figure
+            plot(X_up(16:116), lnR_up(16:116), 'bx')
+            hold on
+            plot(X_up(16:116), cCoeff(1)*X_up(16:116) + cCoeff(2), 'r-')
+            hold on
+            xX = 8.566;
+            yY = 0.8866;% (x,y) beschreibt den punkt, wo die Fitline angeschrieben werden soll
+            sStr = {'\leftarrow y = 1.0358x -8.0400'};
+            text(xX, yY, sStr, 'Color', 'red');
+            X3 = [11, 18];
+            Y3 = [4, 7.5];
+            str3 = {'1', '2'};
+            text(X3, Y3, str3)
+            xlabel('(2k_B T)^{-1} [a.u.]');
+            ylabel('ln(R_s) [a.u.]');
+            legend('data', 'linear fit', 'Location', 'Best');
+            title('FOR RESIDUALS heating');
+            saveas(gcf, fullfile(fname, 'oven_lnR_up_FOR_RESIDUALS.eps'), 'epsc');
+    
+    %}
 E_gap_up = 2*kB * T_oven_up(:) .* lnR_up(:);
     
     
-    
 % 2. PART : COOL DOWN
+
 opts = spreadsheetImportOptions("NumVariables", 6);
 opts.Sheet = "Tabelle1";
 opts.DataRange = "A2:F100";
@@ -153,7 +180,7 @@ tbl = readtable("C:\von_Server\ETH\BSc Physics\5\Praktikum 3\Semiconductor\data\
     errI_mAoven = tbl.errI_mA;
     clear opts tbl
     
-    err_T_oven = str2double(errToven); % °C or K
+    err_T_oven = str2double(errToven); % ï¿½C or K
     V4_oven = str2double(V4oven) * 10^-3; % V
     err_V4_oven = str2double(errV4oven)* 10^-3; % V
     I_oven = str2double(I_mAoven)* 10^-3; % A
@@ -184,6 +211,10 @@ tbl = readtable("C:\von_Server\ETH\BSc Physics\5\Praktikum 3\Semiconductor\data\
         [xData, yData] = prepareCurveData( X, lnR );
         ft = fittype( 'poly1' );
         [fitresult, gof] = fit( xData, yData, ft );
+            % fitresult: p1 = 1.113  (1.107, 1.118) 
+            %            -> err_E_gap_cooling := 0.005
+            %            p2 = -8.647  (-8.704, -8.589)
+            
         coeff = coeffvalues(fitresult);
         fitt1 = fit(xData, yData, ft);
 
@@ -206,39 +237,60 @@ tbl = readtable("C:\von_Server\ETH\BSc Physics\5\Praktikum 3\Semiconductor\data\
     title('T-dependent resistance while cooling down');
     saveas(gcf, fullfile(fname, 'oven_lnR.eps'), 'epsc');
 %}
+%{        
+    % for residuals
+         figure
+         plot(X(:), lnR(:), 'bo')
+         xlabel('(2k_B T)^{-1} [a.u.]');
+         ylabel('ln(R_s) [a.u.]');
+         legend('data', 'linear fit', 'Location', 'Best');
+         title('FOR RESIDUALS COOLING');
+         saveas(gcf, fullfile(fname, 'oven_lnR_RESIDUALS_COOLING.eps'), 'epsc');
+    
+  %}  
+  %}  
+  
+  
+% CARRIER DENSITY AND MOBILITY
 
 % Mobility: mu propto T^{-3/2}
 mu_up = (T_oven_up(:)).^(-3/2);
 err_mu_up = (3/2) *(T_oven_up(:)).^(-5/2) .* err_T_oven_up(:);
     figure
     errorbar(T_oven_up(:), mu_up(:), err_mu_up(:)/2, err_mu_up(:)/2, err_T_oven_up(:)/2, err_T_oven_up(:)/2, 'b-');
+    %hold on
+    %plot(T_oven_up(:), (T_oven_up(:)).^(-3/2), 'r-')
     xlabel('T [K]');
     ylabel('\mu [m^2 / Vs]');
-    %legend('data', 'linear fit', 'Location', 'Best');
+    %legend('data', 'T^{-3/2}', 'Location', 'Best');
     title('Mobility \mu as a function of T');
     saveas(gcf, fullfile(fname, 'mobility.eps'), 'epsc');
     
  % carrier concentration n
  E_gap_heat = 1.04 * 1.602*10^-19; %V
- err_E_gap_heat = 1;
+ err_E_gap_heat = 0.005* 1.602*10^-19; %V
  E_gap_cool = 1.11 * 1.602*10^-19; %V
- err_E_gap_cool = 1;
+ err_E_gap_cool = 0.005* 1.602*10^-19; %V
  n_heat = ((T_oven_up(:)).^(3/2)).' .* exp(-E_gap_heat / (2*kB .* T_oven_up(:)));
- err_n_heat = ((err_T_oven_up(:) .* (3/2 .* (T_oven_up(:)).^(1/2).*exp(-E_gap_heat ./ (2*kB .* T_oven_up(:)))...
-     + (T_oven_up(:)).^(3/2) .* (E_gap_heat / 2*kB.*(T_oven_up(:)).^2).*exp(-E_gap_heat / (2*kB .* T_oven_up(:))))).^2 ...
-     + (err_E_gap_heat .* (T_oven_up(:)).^(3/2) .* exp(-E_gap_heat ./ (2*kB .* T_oven_up(:))) .* (1./(2*kB.*T_oven_up(:)))).^2).^(1/2);
+ err_n_heat = zeros(1,116);
  n_cool = ((T_oven(:)).^(3/2)).' .* exp(-E_gap_cool / (2*kB .* T_oven(:)));
-
+ err_n_cool = zeros(1,99);
+ for i=1:116
+     err_n_heat(i) = ((err_T_oven_up(i) * (3/2 * (T_oven_up(i))^(1/2)*exp(-E_gap_heat / (2*kB * T_oven_up(i)))+ (T_oven_up(i))^(3/2) * (E_gap_heat / 2*kB *(T_oven_up(i))^2)*exp(-E_gap_heat / (2*kB * T_oven_up(i)))))^2 + (err_E_gap_heat * (T_oven_up(i))^(3/2) * exp(-E_gap_heat / (2*kB * T_oven_up(i))) * (1/(2*kB*T_oven_up(i))))^2)^(1/2);
+ end
+ for j=1:99
+    err_n_cool(j) = ((err_T_oven(j) * (3/2 * (T_oven(j))^(1/2)*exp(-E_gap_cool / (2*kB * T_oven(j)))+ (T_oven(j))^(3/2) * (E_gap_cool / 2*kB *(T_oven(j))^2)*exp(-E_gap_cool / (2*kB * T_oven(j)))))^2 + (err_E_gap_cool * (T_oven(j))^(3/2) * exp(-E_gap_cool / (2*kB * T_oven(j))) * (1/(2*kB*T_oven(j))))^2)^(1/2);
+ end
+ 
  
     figure
     %plot(T_oven_up(:), n_heat(:), 'b-', T_oven(:), n_cool(:), 'c-');
-    plot(T_oven_up(:), n_heat(:), 'b-');
+    %plot(T_oven_up(:), n_heat(:), 'b-');
+    errorbar(T_oven_up(:), n_heat(:), err_n_heat(:)/2, err_n_heat(:)/2, err_T_oven_up(:)/2, err_T_oven_up(:)/2, 'b-');
     %legend('heating process', 'cooling process');
-    title('Carrier density n as a function of T');
+    title('Charge carrier density n as a function of T');
     xlabel('T [K]');
     ylabel('n [1 / m^3]');
-    xlabel('T [K]');
-    ylabel('\mu [m^2 / Vs]');
     saveas(gcf, fullfile(fname, 'carrier_density.eps'), 'epsc');
     
-    
+   n_Si_300K = 300^(3/2) * exp(-E_gap_heat / (2*kB * 300))
